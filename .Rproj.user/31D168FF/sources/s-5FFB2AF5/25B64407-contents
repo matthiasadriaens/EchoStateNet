@@ -92,7 +92,8 @@ createESN <- function(leaking.rate =0.2,
                     n.neurons = 1000,
                     wash.out = 100,
                     U,
-                    Y){
+                    Y,
+                    feedback = FALSE){
   N <- n.neurons
   K <- ncol(U)
   L <- ncol(Y)
@@ -115,7 +116,7 @@ createESN <- function(leaking.rate =0.2,
              X = X,
              regCoef = 1e-2,
              wash.out = wash.out,
-             feedback = TRUE)
+             feedback = feedback)
   return(esn)
 }
 
