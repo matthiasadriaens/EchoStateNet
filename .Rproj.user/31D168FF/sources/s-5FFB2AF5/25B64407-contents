@@ -73,7 +73,7 @@ init_reservoir <- function(N,K,L){
   init_res <- list()
   init_res[["W_in"]] <- init_W_in(N,K)
   init_res[["W"]] <- init_W(N)
-  #init_res[["W_out"]] <- init_W_out(K,N,L)
+  init_res[["W_out"]] <- init_W_out(K,N,L)
   return(init_res)
 }
 
