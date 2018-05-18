@@ -120,7 +120,10 @@ setMethod("train", signature(esn = "ESN"), function(esn) {
     #Update equation for the reservoir states
     x <-  (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,esn@U[i,])))+  esn@W%*%x)
     #Collecting all the reservoir states
-    esn@X[,i] <- c(1,esn@U[i,],as.matrix(x))
+    #Wash out the initial set up
+    if(i > 100){
+      esn@X[,i] <- c(1,esn@U[i,],as.matrix(x))
+    }
   }
   #Print the regularization coefficient to the user
   print(esn@regCoef)
