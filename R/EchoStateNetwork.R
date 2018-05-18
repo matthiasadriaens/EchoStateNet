@@ -34,7 +34,8 @@ setClass("ESN",representation(leaking.rate = "numeric",
                               U = "matrix",
                               Y = "matrix",
                               X = "matrix",
-                              regCoef = "numeric"),
+                              regCoef = "numeric",
+                              wash.out = "numeric"),
          prototype(leaking.rate = 0.2,
                    lambda = 0.5,
                    spectral.radius = 0.5),
@@ -63,9 +64,7 @@ init_W <- function(N){
 
 init_W_out <- function(K,N,L){
   #L = number of outputs
-  W_out <- matrix(runif(L*(K+N+1), -0.5, 0.5),
-                  nrow = L,
-                  ncol = (K+N+1))
+  W_out <- matrix()
   return(W_out)
 }
 
@@ -74,7 +73,7 @@ init_reservoir <- function(N,K,L){
   init_res <- list()
   init_res[["W_in"]] <- init_W_in(N,K)
   init_res[["W"]] <- init_W(N)
-  init_res[["W_out"]] <- init_W_out(K,N,L)
+  #init_res[["W_out"]] <- init_W_out(K,N,L)
   return(init_res)
 }
 
@@ -82,6 +81,7 @@ createESN <- function(leaking.rate =0.2,
                     lambda = 0.5,
                     spectral.radius = 0.5,
                     n.neurons = 1000,
+                    wash.out = 100,
                     U,
                     Y){
   N <- n.neurons
@@ -103,7 +103,8 @@ createESN <- function(leaking.rate =0.2,
              U = U,
              Y =  Y,
              X = X,
-             regCoef = 1e-2)
+             regCoef = 1e-2,
+             wash.out = wash.out)
   return(esn)
 }
 
@@ -121,8 +122,8 @@ setMethod("train", signature(esn = "ESN"), function(esn) {
     x <-  (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,esn@U[i,])))+  esn@W%*%x)
     #Collecting all the reservoir states
     #Wash out the initial set up
-    if(i > 100){
-      esn@X[,i] <- c(1,esn@U[i,],as.matrix(x))
+    if(i > esn@wash.out){
+      esn@X[,i] <- c(1,esn@U[i-esn@wash.out,],as.matrix(x))
     }
   }
   #Print the regularization coefficient to the user
