@@ -133,7 +133,7 @@ setMethod("train", signature(esn = "ESN"), function(esn) {
   for(i in 1:nrow(esn@Y)){
     #Calculate feedback matrix if needed
     u_out <- ifelse(i == 1,0,esn@Y[i,])
-    feedbackMatrix <- ifelse(feedback,1,0)*u_out*esn@W_fb
+    feedbackMatrix <- ifelse(esn@feedback,1,0)*u_out*esn@W_fb
     #Update equation for the reservoir states
     x <- (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,esn@U[i,]))) + esn@W%*%x + feedbackMatrix)
     #Collecting all the reservoir states
