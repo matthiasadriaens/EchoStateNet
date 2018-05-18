@@ -35,7 +35,8 @@ setClass("ESN",representation(leaking.rate = "numeric",
                               Y = "matrix",
                               X = "matrix",
                               regCoef = "numeric",
-                              wash.out = "numeric"),
+                              wash.out = "numeric",
+                              feedback = "logical"),
          prototype(leaking.rate = 0.2,
                    lambda = 0.5,
                    spectral.radius = 0.5),
@@ -68,12 +69,20 @@ init_W_out <- function(K,N,L){
   return(W_out)
 }
 
+init_W_fb <- function(N){
+  #L = number of outputs
+  W_fb <- matrix(runif(N*1,-0.5,0.5),N)
+  return(W_fb)
+}
+
+
 init_reservoir <- function(N,K,L){
 
   init_res <- list()
   init_res[["W_in"]] <- init_W_in(N,K)
   init_res[["W"]] <- init_W(N)
   init_res[["W_out"]] <- init_W_out(K,N,L)
+  init_res[["W_fb"]] <- init_W_fb(N)
   return(init_res)
 }
 
@@ -100,11 +109,13 @@ createESN <- function(leaking.rate =0.2,
              W_in = init_res[["W_in"]],
              W_out = init_res[["W_out"]],
              W = init_res[["W"]],
+             W_fb = init_res[["W_fb"]],
              U = U,
              Y =  Y,
              X = X,
              regCoef = 1e-2,
-             wash.out = wash.out)
+             wash.out = wash.out,
+             feedback = TRUE)
   return(esn)
 }
 
@@ -118,12 +129,15 @@ setMethod("train", signature(esn = "ESN"), function(esn) {
   x <- matrix(0,nrow = esn@n.neurons,ncol =1)
 
   for(i in 1:nrow(esn@Y)){
+    #Calculate feedback matrix if needed
+    u_out <- ifelse(i == 1,0,esn@Y[i,])
+    feedbackMatrix <- ifelse(feedback,1,0)*u_out*esn@W_fb
     #Update equation for the reservoir states
-    x <-  (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,esn@U[i,])))+  esn@W%*%x)
+    x <- (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,esn@U[i,]))) + esn@W%*%x + feedbackMatrix)
     #Collecting all the reservoir states
     #Wash out the initial set up
     if(i > esn@wash.out){
-      esn@X[,i] <- c(1,esn@U[i-esn@wash.out,],as.matrix(x))
+      esn@X[,i-esn@wash.out] <- c(1,esn@U[i,],as.matrix(x))
     }
   }
   #Print the regularization coefficient to the user
@@ -146,6 +160,9 @@ setMethod("predict", signature(esn = "ESN", U = "matrix"), function(esn,U) {
   x <- matrix(0,nrow = esn@n.neurons,ncol =1)
 
   for (i in 1:(nrow(U) - 1)) {
+    #Calculate feedback matrix if needed
+    #u_out <- esn@Y[1,]
+    #feedbackMatrix <- ifelse(feedback,1,0)*u_out*esn@W_fb
     #Calculate reservoir state with given inputs
     x <- (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,U[i,])))+ esn@W%*%x)
     #Predict output with trained w_out layer
@@ -154,11 +171,6 @@ setMethod("predict", signature(esn = "ESN", U = "matrix"), function(esn,U) {
   #Return the output
   Yp
 })
-
-
-
-
-
 
 
 
