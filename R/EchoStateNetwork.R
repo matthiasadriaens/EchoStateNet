@@ -128,7 +128,6 @@ createESN <- function(leaking.rate =0.2,
 ####TRAINING THE ECHO STATE NETWORK####
 #######################################
 
-
 setGeneric("train", function(esn) 0)
 #Matrix runs the reservoir and collects the reservoir states for a given initilized echo state network
 setMethod("train", signature(esn = "ESN"), function(esn) {
@@ -155,7 +154,6 @@ setMethod("train", signature(esn = "ESN"), function(esn) {
 ####PREDICTING WITH ECHO STATE NET#####
 #######################################
 
-
 setGeneric("predict", function(esn, U) 0)
 #Method predicts an an output matrix for a given input matrix and a trained ESN
 setMethod("predict", signature(esn = "ESN", U = "matrix"), function(esn,U) {
@@ -170,7 +168,7 @@ setMethod("predict", signature(esn = "ESN", U = "matrix"), function(esn,U) {
     #Calculate reservoir state with given inputs
     x <- (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,U[i,])))+ esn@W%*%x + feedbackMatrix)
     #Predict output with trained w_out layer
-    y <- esn@W_out %*% c(1,esn@U[i,],as.matrix(x))
+    y <- esn@W_out %*% c(1,U[i,],as.matrix(x))
     Yp[i+1,] <- y
     u_out <- y
   }
