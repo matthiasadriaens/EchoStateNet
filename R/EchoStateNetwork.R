@@ -14,19 +14,12 @@ esn_validity <- function(esn) {
   if(length(esn@leaking.rate) != 1){
     warnings <- c(warnings,paste("Leaking rate is length", esn@leaking.rate, ".  Should be 1", sep = " "))
   }
-  if(length(esn@spectral.radius) != 1){
-    warnings <- c(warnings,paste("Spectral radius is length", esn@spectral.radius,". Should be 1",sep = " "))
-  }
-  if(esn@spectral.radius < 0){
-    warnings <- c(warnings,paste("Spectral radius is",esn@spectral.radius,". Should be positive",sep = " "))
-  }
 
   if(length(warnings) == 0) TRUE else warnings
 }
 
 #' @param leaking.rate The rate which the net is learning at
 #' @param lambda The lambda of the ESN
-#' @param spectral.radius The spectral radius of the network
 #' @param W_in W_in of the network
 #' @param W_out W_out of the network
 #' @param W The reservoir of the matrix
@@ -35,7 +28,6 @@ esn_validity <- function(esn) {
 #' @author Matthias Adriaens
 setClass("ESN",representation(leaking.rate = "numeric",
                               lambda = "numeric",
-                              spectral.radius = "numeric",
                               n.neurons = "numeric",
                               W_in = "matrix",
                               W_out = "matrix",
@@ -46,10 +38,10 @@ setClass("ESN",representation(leaking.rate = "numeric",
                               X = "matrix",
                               regCoef = "numeric",
                               wash.out = "numeric",
-                              feedback = "logical"),
+                              feedback = "logical",
+                              resCon = "numeric"),
          prototype(leaking.rate = 0.2,
-                   lambda = 0.5,
-                   spectral.radius = 0.5),
+                   lambda = 0.5),
          validity = esn_validity
 )
 
@@ -61,15 +53,16 @@ init_W_in <- function(N,K){
   return(W_in)
 }
 
-init_W <- function(N){
+init_W <- function(N,lambda,resCon){
   #N is number of reservoir units
-  W <- matrix(runif(N*N, -0.5, 0.5),
-              nrow = N,
-              ncol = N)
+  W <- matrix(runif(N*N, -0.5, 0.5)
+              ,nrow = N
+              ,ncol = N)*
+       matrix(rbinom(N*N,1,resCon),N)
   cat('Computing spectral radius...')
-  rhoW = abs(eigen(W,only.values=TRUE)$values[1])
+  spectral.radius = abs(eigen(W,only.values=TRUE)$values[1])
   print('done.')
-  W = W * 1.25 / rhoW
+  W = W/spectral.radius*lambda
   return(W)
 }
 
@@ -86,11 +79,11 @@ init_W_fb <- function(N){
 }
 
 
-init_reservoir <- function(N,K,L){
+init_reservoir <- function(N,K,L,lambda,resCon){
 
   init_res <- list()
   init_res[["W_in"]] <- init_W_in(N,K)
-  init_res[["W"]] <- init_W(N)
+  init_res[["W"]] <- init_W(N,lambda,resCon)
   init_res[["W_out"]] <- init_W_out(K,N,L)
   init_res[["W_fb"]] <- init_W_fb(N)
   return(init_res)
@@ -98,24 +91,24 @@ init_reservoir <- function(N,K,L){
 
 createESN <- function(leaking.rate =0.2,
                     lambda = 0.5,
-                    spectral.radius = 0.5,
                     n.neurons = 1000,
                     wash.out = 100,
                     U,
                     Y,
-                    feedback = FALSE){
+                    feedback = FALSE,
+                    regCoef = 0.025,
+                    resCon = 0.1){
   N <- n.neurons
   K <- ncol(U)
   L <- ncol(Y)
   init_res <- list()
-  init_res <- init_reservoir(N,K,L)
+  init_res <- init_reservoir(N,K,L,lambda)
 
   X <- matrix(0,1+ncol(U) + n.neurons,nrow(Y))
 
   esn <- new("ESN",
              leaking.rate = leaking.rate,
              lambda = lambda,
-             spectral.radius = spectral.radius,
              n.neurons = n.neurons,
              W_in = init_res[["W_in"]],
              W_out = init_res[["W_out"]],
@@ -124,9 +117,10 @@ createESN <- function(leaking.rate =0.2,
              U = U,
              Y =  Y,
              X = X,
-             regCoef = 1e-2,
+             regCoef = regCoef,
              wash.out = wash.out,
-             feedback = feedback)
+             feedback = feedback,
+             resCon = resCon)
   return(esn)
 }
 
@@ -181,6 +175,7 @@ setMethod("predict", signature(esn = "ESN", U = "matrix"), function(esn,U) {
     y <- esn@W_out %*% c(1,esn@U[i,],as.matrix(x))
     Yp[i+1,] <- y
     u_out <- y
+    print(u_out)
   }
   #Return the output
   Yp
