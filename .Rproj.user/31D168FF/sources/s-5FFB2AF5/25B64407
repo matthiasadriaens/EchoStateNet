@@ -7,13 +7,13 @@
     "folds" : "",
     "hash" : "0",
     "id" : "25B64407",
-    "lastKnownWriteTime" : 1526753570,
-    "last_content_update" : 1526753570159,
+    "lastKnownWriteTime" : 1526754078,
+    "last_content_update" : 1526754078931,
     "path" : "~/EchoStateNet/R/EchoStateNetwork.R",
     "project_path" : "R/EchoStateNetwork.R",
     "properties" : {
-        "cursorPosition" : "173,5",
-        "scrollLine" : "152"
+        "cursorPosition" : "173,7",
+        "scrollLine" : "147"
     },
     "relative_order" : 1,
     "source_on_save" : false,

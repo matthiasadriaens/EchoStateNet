@@ -162,8 +162,9 @@ setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",
     Yp <- matrix(0, nrow = nrow(U) , ncol = ncol(esn@Y))
     #Init single reservoir state
     x <- matrix(0,nrow = esn@n.neurons,ncol =1)
-    u_out <- Yp[1,]
+    #Run in Generative mode
     if(isTRUE(generative)){
+      u_in <- U[1,]
       for(i in 1:genNum){
         x <- (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,u_in)))+ esn@W%*%x)
         y <- esn@W_out %*% c(1,u_in,as.matrix(x))
@@ -172,7 +173,9 @@ setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",
         u_in <- y
       }
     }
+    #Run in prediction mode
     else{
+      u_out <- Yp[1,]
       for (i in 1:(nrow(U) - 1)) {
         #Calculate feedback matrix if needed
         feedbackMatrix <- esn@W_fb%*%u_out
@@ -187,5 +190,20 @@ setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",
     #Return the output
     Yp
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
