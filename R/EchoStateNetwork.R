@@ -102,7 +102,7 @@ createESN <- function(leaking.rate =0.2,
   K <- ncol(U)
   L <- ncol(Y)
   init_res <- list()
-  init_res <- init_reservoir(N,K,L,lambda)
+  init_res <- init_reservoir(N,K,L,lambda,resCon)
 
   X <- matrix(0,1+ncol(U) + n.neurons,nrow(Y))
 
