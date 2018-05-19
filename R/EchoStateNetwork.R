@@ -146,8 +146,6 @@ setMethod("train", signature(esn = "ESN"), function(esn) {
       esn@X[,i-esn@wash.out] <- c(1,esn@U[i,],as.matrix(x))
     }
   }
-  #Print the regularization coefficient to the user
-  print(esn@regCoef)
   #Train W_out in a linear way using Ridge regression
   esn@W_out <- t(esn@Y)%*%t(esn@X)%*%solve(esn@X%*%t(esn@X) + esn@regCoef*diag(nrow(esn@X)))
   esn
@@ -175,7 +173,6 @@ setMethod("predict", signature(esn = "ESN", U = "matrix"), function(esn,U) {
     y <- esn@W_out %*% c(1,esn@U[i,],as.matrix(x))
     Yp[i+1,] <- y
     u_out <- y
-    print(u_out)
   }
   #Return the output
   Yp
