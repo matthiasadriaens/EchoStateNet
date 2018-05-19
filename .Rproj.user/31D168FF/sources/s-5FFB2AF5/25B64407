@@ -5,15 +5,15 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "515022528",
+    "hash" : "311017708",
     "id" : "25B64407",
-    "lastKnownWriteTime" : 1526656202,
-    "last_content_update" : 1526656202243,
+    "lastKnownWriteTime" : 1526721916,
+    "last_content_update" : 1526721916307,
     "path" : "~/EchoStateNet/R/EchoStateNetwork.R",
     "project_path" : "R/EchoStateNetwork.R",
     "properties" : {
-        "cursorPosition" : "137,35",
-        "scrollLine" : "122"
+        "cursorPosition" : "187,0",
+        "scrollLine" : "165"
     },
     "relative_order" : 1,
     "source_on_save" : false,

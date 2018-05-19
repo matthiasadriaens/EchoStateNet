@@ -1,3 +1,12 @@
+########################################
+########################################
+###IMPLEMENTATION OF ECHO STATE NETWORKS
+###By Matthias Adriaens#################
+###github/matthiasadriaens/EchoStateNet#
+########################################
+########################################
+
+
 esn_validity <- function(esn) {
   warnings <- character()
 
@@ -125,6 +134,7 @@ createESN <- function(leaking.rate =0.2,
 ####TRAINING THE ECHO STATE NETWORK####
 #######################################
 
+
 setGeneric("train", function(esn) 0)
 #Matrix runs the reservoir and collects the reservoir states for a given initilized echo state network
 setMethod("train", signature(esn = "ESN"), function(esn) {
@@ -153,6 +163,7 @@ setMethod("train", signature(esn = "ESN"), function(esn) {
 ####PREDICTING WITH ECHO STATE NET#####
 #######################################
 
+
 setGeneric("predict", function(esn, U) 0)
 #Method predicts an an output matrix for a given input matrix and a trained ESN
 setMethod("predict", signature(esn = "ESN", U = "matrix"), function(esn,U) {
@@ -160,19 +171,19 @@ setMethod("predict", signature(esn = "ESN", U = "matrix"), function(esn,U) {
   Yp <- matrix(0, nrow = nrow(U) , ncol = ncol(esn@Y))
   #Init single reservoir state
   x <- matrix(0,nrow = esn@n.neurons,ncol =1)
-
+  u_out <- Yp[1,]
   for (i in 1:(nrow(U) - 1)) {
     #Calculate feedback matrix if needed
-    #u_out <- esn@Y[1,]
-    #feedbackMatrix <- ifelse(feedback,1,0)*u_out*esn@W_fb
+    feedbackMatrix <- esn@W_fb%*%u_out
     #Calculate reservoir state with given inputs
-    x <- (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,U[i,])))+ esn@W%*%x)
+    x <- (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,U[i,])))+ esn@W%*%x + feedbackMatrix)
     #Predict output with trained w_out layer
-    Yp[i+1,] <- esn@W_out %*% c(1,esn@U[i,],as.matrix(x))
+    y <- esn@W_out %*% c(1,esn@U[i,],as.matrix(x))
+    Yp[i+1,] <- y
+    u_out <- y
   }
   #Return the output
   Yp
 })
-
 
 
