@@ -154,26 +154,38 @@ setMethod("train", signature(esn = "ESN"), function(esn) {
 ####PREDICTING WITH ECHO STATE NET#####
 #######################################
 
-setGeneric("predict", function(esn, U) 0)
+setGeneric("predict", function(esn, U,generative,genNum) 0)
 #Method predicts an an output matrix for a given input matrix and a trained ESN
-setMethod("predict", signature(esn = "ESN", U = "matrix"), function(esn,U) {
-  #Init output matrix for prediction
-  Yp <- matrix(0, nrow = nrow(U) , ncol = ncol(esn@Y))
-  #Init single reservoir state
-  x <- matrix(0,nrow = esn@n.neurons,ncol =1)
-  u_out <- Yp[1,]
-  for (i in 1:(nrow(U) - 1)) {
-    #Calculate feedback matrix if needed
-    feedbackMatrix <- esn@W_fb%*%u_out
-    #Calculate reservoir state with given inputs
-    x <- (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,U[i,])))+ esn@W%*%x + feedbackMatrix)
-    #Predict output with trained w_out layer
-    y <- esn@W_out %*% c(1,U[i,],as.matrix(x))
-    Yp[i+1,] <- y
-    u_out <- y
-  }
-  #Return the output
-  Yp
+setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",genNum = "numeric"),
+  function(esn,U,generative,genNum) {
+    #Init output matrix for prediction
+    Yp <- matrix(0, nrow = nrow(U) , ncol = ncol(esn@Y))
+    #Init single reservoir state
+    x <- matrix(0,nrow = esn@n.neurons,ncol =1)
+    u_out <- Yp[1,]
+    if(isTRUE(generative)){
+      for(i in 1:genNum){
+        x <- (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,u_in)))+ esn@W%*%x)
+        y <- esn@W_out %*% c(1,u_in,as.matrix(x))
+        Yp[i+1,] <- y
+        #Genrative mode, so predicted output gets next input
+        u_in <- y
+      }
+    }
+    else{
+      for (i in 1:(nrow(U) - 1)) {
+        #Calculate feedback matrix if needed
+        feedbackMatrix <- esn@W_fb%*%u_out
+        #Calculate reservoir state with given inputs
+        x <- (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,U[i,])))+ esn@W%*%x + feedbackMatrix)
+        #Predict output with trained w_out layer
+        y <- esn@W_out %*% c(1,U[i,],as.matrix(x))
+        Yp[i+1,] <- y
+        u_out <- y
+      }
+    }
+    #Return the output
+    Yp
 })
 
 
