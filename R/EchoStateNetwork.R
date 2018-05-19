@@ -158,12 +158,11 @@ setGeneric("predict", function(esn, U,generative,genNum) 0)
 #Method predicts an an output matrix for a given input matrix and a trained ESN
 setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",genNum = "numeric"),
   function(esn,U,generative,genNum) {
-    #Init output matrix for prediction
-    Yp <- matrix(0, nrow = nrow(U) , ncol = ncol(esn@Y))
     #Init single reservoir state
     x <- matrix(0,nrow = esn@n.neurons,ncol =1)
     #Run in Generative mode
     if(isTRUE(generative)){
+      Yp <- matrix(0, nrow = genNum , ncol = ncol(esn@Y))
       u_in <- U[1,]
       for(i in 1:genNum){
         x <- (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,u_in)))+ esn@W%*%x)
@@ -175,6 +174,7 @@ setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",
     }
     #Run in prediction mode
     else{
+      Yp <- matrix(0, nrow = nrow(U) , ncol = ncol(esn@Y))
       u_out <- Yp[1,]
       for (i in 1:(nrow(U) - 1)) {
         #Calculate feedback matrix if needed
