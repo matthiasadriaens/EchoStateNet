@@ -8,12 +8,12 @@
     "hash" : "0",
     "id" : "25B64407",
     "lastKnownWriteTime" : 1526741760,
-    "last_content_update" : 1526741775425,
+    "last_content_update" : 1526742114723,
     "path" : "~/EchoStateNet/R/EchoStateNetwork.R",
     "project_path" : "R/EchoStateNetwork.R",
     "properties" : {
-        "cursorPosition" : "107,2",
-        "scrollLine" : "89"
+        "cursorPosition" : "63,16",
+        "scrollLine" : "53"
     },
     "relative_order" : 1,
     "source_on_save" : false,
