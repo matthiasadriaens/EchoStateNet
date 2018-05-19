@@ -162,7 +162,7 @@ setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",
     x <- matrix(0,nrow = esn@n.neurons,ncol =1)
     #Run in Generative mode
     if(isTRUE(generative)){
-      Yp <- matrix(0, nrow = genNum , ncol = ncol(esn@Y))
+      Yp <- matrix(0, nrow = (genNum +1), ncol = ncol(esn@Y))
       u_in <- U[1,]
       for(i in 1:genNum){
         x <- (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,u_in)))+ esn@W%*%x)
@@ -190,20 +190,6 @@ setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",
     #Return the output
     Yp
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
