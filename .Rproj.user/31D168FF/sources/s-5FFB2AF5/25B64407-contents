@@ -148,7 +148,7 @@ setMethod("train", signature(esn = "ESN"), function(esn) {
     }
   }
   #Train W_out in a linear way using Ridge regression
-  Y <- as.matrix(Y[(esn@wash.out+1):nrow(Y),])
+  esn@Y <- as.matrix(esn@Y[(esn@wash.out+1):nrow(esn@Y),])
   esn@W_out <- t(esn@Y)%*%t(esn@X)%*%solve(esn@X%*%t(esn@X) + esn@regCoef*diag(nrow(esn@X)))
   esn
 })
