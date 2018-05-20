@@ -106,6 +106,8 @@ createESN <- function(leaking.rate =0.5,
 
   X <- matrix(0,1+ncol(U) + n.neurons,(nrow(Y)-wash.out))
 
+  Y <- as.matrix(Y[(wash.out+1):nrow(Y),])
+
   esn <- new("ESN",
              leaking.rate = leaking.rate,
              lambda = lambda,
