@@ -144,7 +144,6 @@ setMethod("train", signature(esn = "ESN"), function(esn) {
     #Collecting all the reservoir states
     #Wash out the initial set up
     if(i > esn@wash.out){
-      print("YAA")
       esn@X[,i-esn@wash.out] <- c(1,esn@U[i,],as.matrix(x))
     }
   }
