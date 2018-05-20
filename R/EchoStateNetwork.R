@@ -135,7 +135,7 @@ setGeneric("train", function(esn) 0)
 setMethod("train", signature(esn = "ESN"), function(esn) {
   x <- matrix(0,nrow = esn@n.neurons,ncol =1)
 
-  for(i in 1:nrow(esn@Y)){
+  for(i in 1:(nrow(esn@Y)+esn@wash.out)){
     #Calculate feedback matrix if needed
     u_out <- ifelse(i == 1,0,esn@Y[i,])
     feedbackMatrix <- ifelse(esn@feedback,1,0)*u_out*esn@W_fb
