@@ -162,7 +162,7 @@ setGeneric("predict", function(esn, U,generative,genNum) 0)
 setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",genNum = "numeric"),
   function(esn,U,generative,genNum) {
     #Init single reservoir state
-    x <- matrix(0,nrow = esn@n.neurons,ncol =1)
+    #x <- matrix(0,nrow = esn@n.neurons,ncol =1)
     #Run in Generative mode
     if(isTRUE(generative)){
       Yp <- matrix(0, nrow = (genNum +1), ncol = ncol(esn@Y))
