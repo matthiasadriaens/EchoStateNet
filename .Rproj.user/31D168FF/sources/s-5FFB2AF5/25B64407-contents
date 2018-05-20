@@ -39,7 +39,8 @@ setClass("ESN",representation(leaking.rate = "numeric",
                               regCoef = "numeric",
                               wash.out = "numeric",
                               feedback = "logical",
-                              resCon = "numeric"),
+                              resCon = "numeric",
+                              x = "matrix"),
          #prototype(leaking.rate = 0.2,
          #           lambda = 0.5),
          validity = esn_validity
@@ -104,6 +105,7 @@ createESN <- function(leaking.rate =0.5,
   init_res <- list()
   init_res <- init_reservoir(N,K,L,lambda,resCon)
 
+  x <- matrix(0,nrow = n.neurons,ncol =1)
   X <- matrix(0,1+ncol(U) + n.neurons,(nrow(Y)-wash.out))
 
   Y <- as.matrix(Y[1:nrow(Y),])
@@ -122,7 +124,8 @@ createESN <- function(leaking.rate =0.5,
              regCoef = regCoef,
              wash.out = wash.out,
              feedback = feedback,
-             resCon = resCon)
+             resCon = resCon,
+             x = x)
   return(esn)
 }
 
@@ -133,18 +136,18 @@ createESN <- function(leaking.rate =0.5,
 setGeneric("train", function(esn) 0)
 #Matrix runs the reservoir and collects the reservoir states for a given initilized echo state network
 setMethod("train", signature(esn = "ESN"), function(esn) {
-  x <- matrix(0,nrow = esn@n.neurons,ncol =1)
+  #x <- matrix(0,nrow = esn@n.neurons,ncol =1)
 
   for(i in 1:(nrow(esn@Y))){
       #Calculate feedback matrix if needed
       u_out <- ifelse(i == 1,0,esn@Y[i,])
       feedbackMatrix <- ifelse(esn@feedback,1,0)*u_out*esn@W_fb
       #Update equation for the reservoir states
-      x <- (1-esn@leaking.rate)*x + esn@leaking.rate*tanh(esn@W_in%*%t(t(c(1,esn@U[i,]))) + esn@W%*%x + feedbackMatrix)
+      esn@x <- (1-esn@leaking.rate)*esn@x + esn@leaking.rate*tanh(esn@W_in%*%t(t(c(1,esn@U[i,]))) + esn@W%*%esn@x + feedbackMatrix)
       #Collecting all the reservoir states
       #Wash out the initial set up
     if(i > esn@wash.out){
-      esn@X[,i-esn@wash.out] <- c(1,esn@U[i,],as.matrix(x))
+      esn@X[,i-esn@wash.out] <- c(1,esn@U[i,],as.matrix(esn@x))
     }
   }
   #Train W_out in a linear way using Ridge regression
@@ -168,8 +171,8 @@ setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",
       Yp <- matrix(0, nrow = (genNum +1), ncol = ncol(esn@Y))
       u_in <- U[1,]
       for(i in 1:genNum){
-        x <- (1-esn@leaking.rate)*x + esn@leaking.rate*tanh(esn@W_in%*%t(t(c(1,u_in)))+ esn@W%*%x)
-        y <- esn@W_out %*% c(1,u_in,as.matrix(x))
+        esn@x <- (1-esn@leaking.rate)*esn@x + esn@leaking.rate*tanh(esn@W_in%*%t(t(c(1,u_in)))+ esn@W%*%esn@x)
+        y <- esn@W_out %*% c(1,u_in,as.matrix(esn@x))
         Yp[i+1,] <- y
         #Genrative mode, so predicted output gets next input
         u_in <- y
