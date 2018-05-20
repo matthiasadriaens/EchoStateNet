@@ -186,9 +186,9 @@ setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",
         #Calculate feedback matrix if needed
         feedbackMatrix <- esn@W_fb%*%u_out
         #Calculate reservoir state with given inputs
-        x <- (1-esn@leaking.rate)*x + esn@leaking.rate*tanh(esn@W_in%*%t(t(c(1,U[i,])))+ esn@W%*%x + feedbackMatrix)
+        x <- (1-esn@leaking.rate)*esn@x + esn@leaking.rate*tanh(esn@W_in%*%t(t(c(1,U[i,])))+ esn@W%*%esn@x + feedbackMatrix)
         #Predict output with trained w_out layer
-        y <- esn@W_out %*% c(1,U[i,],as.matrix(x))
+        y <- esn@W_out %*% c(1,U[i,],as.matrix(esn@x))
         Yp[i+1,] <- y
         u_out <- y
       }
