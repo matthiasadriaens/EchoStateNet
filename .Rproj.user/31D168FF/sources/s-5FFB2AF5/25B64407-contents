@@ -106,7 +106,7 @@ createESN <- function(leaking.rate =0.5,
 
   X <- matrix(0,1+ncol(U) + n.neurons,(nrow(Y)-wash.out))
 
-  Y <- as.matrix(Y[(wash.out+1):nrow(Y),])
+  Y <- as.matrix(Y[1:nrow(Y),])
 
   esn <- new("ESN",
              leaking.rate = leaking.rate,
@@ -135,19 +135,20 @@ setGeneric("train", function(esn) 0)
 setMethod("train", signature(esn = "ESN"), function(esn) {
   x <- matrix(0,nrow = esn@n.neurons,ncol =1)
 
-  for(i in 1:(nrow(esn@Y)+esn@wash.out)){
-    #Calculate feedback matrix if needed
-    u_out <- ifelse(i == 1,0,esn@Y[i,])
-    feedbackMatrix <- ifelse(esn@feedback,1,0)*u_out*esn@W_fb
-    #Update equation for the reservoir states
-    x <- (1-esn@leaking.rate)*x + esn@leaking.rate*tanh(esn@W_in%*%t(t(c(1,esn@U[i,]))) + esn@W%*%x + feedbackMatrix)
-    #Collecting all the reservoir states
-    #Wash out the initial set up
+  for(i in 1:(nrow(esn@Y))){
     if(i > esn@wash.out){
+      #Calculate feedback matrix if needed
+      u_out <- ifelse(i == 1,0,esn@Y[i,])
+      feedbackMatrix <- ifelse(esn@feedback,1,0)*u_out*esn@W_fb
+      #Update equation for the reservoir states
+      x <- (1-esn@leaking.rate)*x + esn@leaking.rate*tanh(esn@W_in%*%t(t(c(1,esn@U[i,]))) + esn@W%*%x + feedbackMatrix)
+      #Collecting all the reservoir states
+      #Wash out the initial set up
       esn@X[,i-esn@wash.out] <- c(1,esn@U[i,],as.matrix(x))
     }
   }
   #Train W_out in a linear way using Ridge regression
+  Y <- as.matrix(Y[(esn@wash.out+1):nrow(Y),])
   esn@W_out <- t(esn@Y)%*%t(esn@X)%*%solve(esn@X%*%t(esn@X) + esn@regCoef*diag(nrow(esn@X)))
   esn
 })
