@@ -92,7 +92,7 @@ init_reservoir <- function(N,K,L,lambda,resCon){
 createESN <- function(leaking.rate =0.5,
                     lambda = 1.25,
                     n.neurons = 1000,
-                    wash.out = 100,
+                    wash.out = 0,
                     U,
                     Y,
                     feedback = FALSE,
@@ -104,7 +104,7 @@ createESN <- function(leaking.rate =0.5,
   init_res <- list()
   init_res <- init_reservoir(N,K,L,lambda,resCon)
 
-  X <- matrix(0,1+ncol(U) + n.neurons,nrow(Y))
+  X <- matrix(0,1+ncol(U) + n.neurons,(nrow(Y)-wash.out))
 
   esn <- new("ESN",
              leaking.rate = leaking.rate,
@@ -142,6 +142,7 @@ setMethod("train", signature(esn = "ESN"), function(esn) {
     #Collecting all the reservoir states
     #Wash out the initial set up
     if(i > esn@wash.out){
+      print("YAA")
       esn@X[,i-esn@wash.out] <- c(1,esn@U[i,],as.matrix(x))
     }
   }
