@@ -40,8 +40,8 @@ setClass("ESN",representation(leaking.rate = "numeric",
                               wash.out = "numeric",
                               feedback = "logical",
                               resCon = "numeric"),
-         prototype(leaking.rate = 0.2,
-                   lambda = 0.5),
+         #prototype(leaking.rate = 0.2,
+         #           lambda = 0.5),
          validity = esn_validity
 )
 
@@ -89,15 +89,15 @@ init_reservoir <- function(N,K,L,lambda,resCon){
   return(init_res)
 }
 
-createESN <- function(leaking.rate =0.2,
-                    lambda = 0.5,
+createESN <- function(leaking.rate =0.5,
+                    lambda = 1.25,
                     n.neurons = 1000,
                     wash.out = 100,
                     U,
                     Y,
                     feedback = FALSE,
-                    regCoef = 0.025,
-                    resCon = 0.1){
+                    regCoef = 0.0025,
+                    resCon = 1){
   N <- n.neurons
   K <- ncol(U)
   L <- ncol(Y)
@@ -138,7 +138,7 @@ setMethod("train", signature(esn = "ESN"), function(esn) {
     u_out <- ifelse(i == 1,0,esn@Y[i,])
     feedbackMatrix <- ifelse(esn@feedback,1,0)*u_out*esn@W_fb
     #Update equation for the reservoir states
-    x <- (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,esn@U[i,]))) + esn@W%*%x + feedbackMatrix)
+    x <- (1-esn@leaking.rate)*x + esn@leaking.rate*tanh(esn@W_in%*%t(t(c(1,esn@U[i,]))) + esn@W%*%x + feedbackMatrix)
     #Collecting all the reservoir states
     #Wash out the initial set up
     if(i > esn@wash.out){
@@ -165,7 +165,7 @@ setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",
       Yp <- matrix(0, nrow = (genNum +1), ncol = ncol(esn@Y))
       u_in <- U[1,]
       for(i in 1:genNum){
-        x <- (1-esn@leaking.rate)*x + tanh(esn@W_in%*%t(t(c(1,u_in)))+ esn@W%*%x)
+        x <- (1-esn@leaking.rate)*x + esn@leaking.rate*tanh(esn@W_in%*%t(t(c(1,u_in)))+ esn@W%*%x)
         y <- esn@W_out %*% c(1,u_in,as.matrix(x))
         Yp[i+1,] <- y
         #Genrative mode, so predicted output gets next input
