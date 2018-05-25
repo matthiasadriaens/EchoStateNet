@@ -81,7 +81,6 @@ init_W_fb <- function(N){
 
 
 init_reservoir <- function(N,K,L,lambda,resCon){
-
   init_res <- list()
   init_res[["W_in"]] <- init_W_in(N,K)
   init_res[["W"]] <- init_W(N,lambda,resCon)
@@ -159,7 +158,6 @@ setMethod("train", signature(esn = "ESN"), function(esn) {
 #######################################
 ####PREDICTING WITH ECHO STATE NET#####
 #######################################
-
 setGeneric("predict", function(esn, U,generative,genNum) 0)
 #Method predicts an an output matrix for a given input matrix and a trained ESN
 setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",genNum = "numeric"),
@@ -171,7 +169,6 @@ setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",
       Yp <- matrix(0, nrow = (genNum +1), ncol = ncol(esn@Y))
       u_in <- U[1,]
       for(i in 1:genNum){
-
         print(dim(t(t(c(1,u_in)))))
         print('lol')
         esn@x <- (1-esn@leaking.rate)*esn@x + esn@leaking.rate*tanh(esn@W_in%*%t(t(c(1,u_in)))+ esn@W%*%esn@x)
@@ -187,7 +184,7 @@ setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",
       u_out <- Yp[1,]
       for (i in 1:(nrow(U) - 1)) {
         #Calculate feedback matrix if needed
-        feedbackMatrix <- esn@W_fb%*%u_out
+        feedbackMatrix <- ifelse(esn@feedback,1,0)*u_out*esn@W_fb
         #Calculate reservoir state with given inputs
         x <- (1-esn@leaking.rate)*esn@x + esn@leaking.rate*tanh(esn@W_in%*%t(t(c(1,U[i,])))+ esn@W%*%esn@x + feedbackMatrix)
         #Predict output with trained w_out layer
