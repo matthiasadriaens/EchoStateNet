@@ -183,10 +183,8 @@ setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",
       Yp <- matrix(0, nrow = nrow(U) , ncol = ncol(esn@Y))
       u_out <- Yp[1,]
       for (i in 1:(nrow(U) - 1)) {
-        #Calculate feedback matrix if needed
-        feedbackMatrix <- ifelse(esn@feedback,1,0)*u_out*esn@W_fb
         #Calculate reservoir state with given inputs
-        x <- (1-esn@leaking.rate)*esn@x + esn@leaking.rate*tanh(esn@W_in%*%t(t(c(1,U[i,])))+ esn@W%*%esn@x + feedbackMatrix)
+        x <- (1-esn@leaking.rate)*esn@x + esn@leaking.rate*tanh(esn@W_in%*%t(t(c(1,U[i,])))+ esn@W%*%esn@x)
         #Predict output with trained w_out layer
         y <- esn@W_out %*% c(1,U[i,],as.matrix(esn@x))
         Yp[i+1,] <- y
