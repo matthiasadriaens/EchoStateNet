@@ -171,7 +171,9 @@ setMethod("predict", signature(esn = "ESN", U = "matrix",generative = "logical",
       Yp <- matrix(0, nrow = (genNum +1), ncol = ncol(esn@Y))
       u_in <- U[1,]
       for(i in 1:genNum){
+
         print(dim(t(t(c(1,u_in)))))
+        print('lol')
         esn@x <- (1-esn@leaking.rate)*esn@x + esn@leaking.rate*tanh(esn@W_in%*%t(t(c(1,u_in)))+ esn@W%*%esn@x)
         y <- esn@W_out %*% c(1,u_in,as.matrix(esn@x))
         Yp[i+1,] <- y
