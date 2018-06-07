@@ -1,14 +1,15 @@
-## Echo State Network implementation
+# Echo State Network implementation
 
-# Install in your R session:
+## Install in your R session:
 
+```{r}
 install.packages("devtools")
 library(devtools)
 devtools::install_github("matthiasadriaens/EchoStateNet")
 library(EchoStateNet)
+```
 
-
-# Simple example of Mackey-Glass system:
+## Simple example of Mackey-Glass system:
 ```{r}
 trainLen = 2000
 testLen = 2000
