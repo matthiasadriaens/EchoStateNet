@@ -5,53 +5,66 @@
   Creates an echo state network
 }
 \description{
-  Creates a new ESN for a given set of parameters
+  Creates an echo state network form the ESN-type
 }
 \usage{
-createESN(x)
+createESN(leaking.rate = 0.35,
+								lambda = 1.25,
+								n.neurons = 1000,
+								wash.out = 100,
+								feedback = FALSE,
+								regCoef = 1e-8,
+								resCon = 1,
+								U = net_u,
+								Y = net_Yt)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{
-%%     ~~Describe \code{x} here~~
-}
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
+	\item{leaking.rate}{}Leaking rate of the ESN, cfr. learning rate}
+	\item{lambda}{Scales the spectral radius of the reservoir}
+	\item{n.neurons}{Number of neurons in the reservoir}
+	\item{wash.out}{Number of instances that is chosen to wash out initalization}
+	\item{feedback}{Logical value for incorporating output feedback into the matrix}
+	\item{regCoef}{Regularization coefficient of the network}
+	\item{resCon}{Density factor for non-zero elements in the reservoir}
+	\item{U}{Input matrix, may be mulit-variate}
+	\item{Y}{Target matrix, holds the labels}
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
+S4 ESN class object
 }
 \author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
+Matthias Adriaens
 }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-}
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
+trainLen = 2000
+testLen = 2000
+initLen = 100
 
-## The function is currently defined as
-function (x)
-{
-  }
+#Data to be found in the /data folder in package:
+
+data = as.matrix(read.table('MackeyGlass_t17.txt'))
+
+net_u = as.matrix(data[1:trainLen])
+net_Yt = matrix(data[2:(trainLen+1)])
+
+
+net <- EchoStateNet::createESN(leaking.rate = 0.35,
+								lambda = 1.25,
+								n.neurons = 1000,
+								wash.out = 100,
+								feedback = FALSE,
+								regCoef = 1e-8,
+								resCon = 1,
+								U = net_u,
+								Y = net_Yt)
+
+trained_net <- EchoStateNet::train(net)
+
+Ypred <- EchoStateNet::predict(trained_net,
+								U = as.matrix(to.predict)),
+								generative = FALSE,
+								genNum = 2000)
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }% use one of  RShowDoc("KEYWORDS")
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+
